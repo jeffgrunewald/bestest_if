@@ -1,5 +1,5 @@
 defmodule BestestIf do
-  require Logger
+  alias BestestIf.Executer
 
   defmacro __using__(_) do
     quote do
@@ -7,29 +7,21 @@ defmodule BestestIf do
     end
   end
 
-  defmacro if!(expression, [do: do_block]) do
-    function = {:fn, [], [{:->, [], [[], do_block]}]}
+  defmacro if!(expression, do: do_block) do
     quote do
-      execute(unquote(expression), unquote(function))
+      if_task = Task.async(fn ->
+        receive do
+          :do_it ->
+            unquote(do_block)
+          :dont_do_it ->
+            nil
+        end
+      end)
+
+      Executer.execute(unquote(expression), if_task.pid)
+
+      Task.await(if_task, :infinity)
     end
   end
-
-  def execute(expression, function) do
-    BestestIf.Writer.start_link()
-    BestestIf.Loader.start_link()
-
-    Process.sleep(500)
-
-    "BestestIf.Runner"
-    |> Code.eval_string()
-    |> (fn {module, []} -> module end).()
-    |> Code.ensure_loaded()
-    |> case do
-         {:module, _} ->
-           {:ok, pid} = apply(BestestIf.Runner, :start, [[expression: expression, function: function]])
-           GenServer.call(pid, :run)
-         {:error, _} ->
-           Logger.error("Code did not load successfully")
-       end
-  end
 end
+

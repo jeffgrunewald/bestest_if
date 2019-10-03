@@ -49,7 +49,7 @@ defmodule BestestIf.RuntimeCode do
   @bestest_if_runner_code ~S"""
   defmodule BestestIf.Runner do
     require Logger
-    use GenServer
+    use GenServer, restart: :transient
     use BestestIf.Loader
 
     def start(args) do
@@ -63,30 +63,21 @@ defmodule BestestIf.RuntimeCode do
 
       state = %{
         expression: Keyword.fetch!(args, :expression),
-        function: Keyword.fetch!(args, :function),
+        task: Keyword.fetch!(args, :task),
         temp_dir: Keyword.get_lazy(args, :temp, temp_finder)
       }
 
       {:ok, state}
     end
 
-    def handle_call(:run, _, %{expression: exp, function: fun} = state) do
-      response = if? exp, do: self()
-      Process.send(self(), :die, [])
-      {:reply, response, state}
+    def handle_cast(:run, %{expression: expression, task: task} = state) do
+      if? expression, do: send(task, :do_it)
+
+      if? ! expression, do: send(task, :dont_do_it)
+      {:stop, :normal, state}
     end
 
-    def handle_cast(:do, %{function: fun} = state) do
-      fun.()
-      {:noreply, state}
-    end
-
-    def handle_info(:die, state) do
-      Process.sleep(2_000)
-      {:stop, :finished, state}
-    end
-
-    def terminate(:finished, %{temp_dir: temp}) do
+    def terminate(:normal, %{temp_dir: temp}) do
       File.rm("#{temp}/best_if_ever.ex")
       File.rm("#{temp}/bestest_if_runner.ex")
     end

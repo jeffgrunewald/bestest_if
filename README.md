@@ -1,21 +1,42 @@
 # BestestIf
 
-**TODO: Add description**
+A fun challenge and an otherwise bad idea.
+Exploring advanced features of Elixir and OTP by implementing
+a working "if" control flow statement that maintains the traditional
+syntax (`if condition, do: some_action`).
+
+Don't try this at home!
 
 ## Installation
 
 If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `bestest_if` to your list of dependencies in `mix.exs`:
+by adding `bestest_if` to your list of dependencies in `mix.exs`.
+
+Spoiler alert, putting this on Hex would be irresponsible; someone might be tempted to use it.
 
 ```elixir
 def deps do
   [
-    {:bestest_if, "~> 0.1.0"}
+    {:bestest_if, git: "https://github.com/jeffgrunewald/bestest_if.git"}
   ]
 end
 ```
 
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at [https://hexdocs.pm/bestest_if](https://hexdocs.pm/bestest_if).
+## Use
 
+Once installed, you can incorporate the logic into your application,
+if you so dare by including the necessary import statement in the
+modules where you want to use the custom statement and then replacing your
+traditional "if" keyword with the custom one provided by the import.
+
+```
+import BestestIf
+
+...
+
+def some_function(x) do
+  if! something_about(x) do
+    take_action_however_you_like
+  end
+end
+```
