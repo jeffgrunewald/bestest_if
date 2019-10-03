@@ -12,10 +12,7 @@ defmodule BestestIf.MixProject do
   end
 
   def application do
-    [
-      extra_applications: [:logger],
-      mod: {BestestIf.Application, []}
-    ]
+    []
   end
 
   defp deps do
